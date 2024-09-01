@@ -1,0 +1,66 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 32203ad3..aedc1ca9 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -155,7 +155,16 @@ endif()
+ string(REGEX MATCH "([0-9]+)\.([0-9]+)" _HEYOKA_PY_NPY_MAJOR_MINOR ${Python3_NumPy_VERSION})
+ message(STATUS "NumPy major.minor version: ${_HEYOKA_PY_NPY_MAJOR_MINOR}")
+ 
+-set(HEYOKA_PY_INSTALL_PATH "" CACHE STRING "heyoka module installation path")
++if (DEFINED SKBUILD)
++    # If we're using scikit-build-core, set install path to the current
++    # directory since skbuild will be handling the installation.
++    set(HEYOKA_PY_INSTALL_PATH "." CACHE STRING "heyoka module installation path")
++
++    # Also ensure shared libraries can be found in RPATH.
++    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
++else()
++    set(HEYOKA_PY_INSTALL_PATH "" CACHE STRING "heyoka module installation path")
++endif()
+ mark_as_advanced(HEYOKA_PY_INSTALL_PATH)
+ unset(_HEYOKA_PY_PYTHON3_COMPONENTS)
+ 
+diff --git a/pyproject.toml b/pyproject.toml
+new file mode 100644
+index 00000000..65fe9497
+--- /dev/null
++++ b/pyproject.toml
+@@ -0,0 +1,38 @@
++[build-system]
++build-backend = 'scikit_build_core.build'
++requires = ['scikit-build-core', 'pybind11', 'numpy < 2']
++
++[project]
++name = 'heyoka.py'
++version = '5.1.0'
++description = "Python library for ODE integration via Taylor's method and LLVM"
++readme = 'README.md'
++requires-python = '>=3.5'
++dependencies = [
++    'cloudpickle',
++    'numpy < 2',
++]
++authors = [
++    {name = 'Francesco Biscarni', email = 'bluescarni@gmail.com'},
++    {name = 'Dario Izzo'},
++]
++license = {text = 'MPL-2.0'}
++classifiers = [
++    # How mature is this project? Common values are
++    #   3 - Alpha
++    #   4 - Beta
++    #   5 - Production/Stable
++    "Development Status :: 5 - Production/Stable",
++    "Operating System :: OS Independent",
++    "Intended Audience :: Science/Research",
++    "Topic :: Scientific/Engineering",
++    "Topic :: Scientific/Engineering :: Mathematics",
++    "Topic :: Scientific/Engineering :: Physics",
++    "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
++    "Programming Language :: Python :: 3",
++]
++keywords = ['science', 'math', 'physics', 'ode']
++
++[project.urls]
++Documentation = "https://bluescarni.github.io/heyoka.py/index.html" 
++Repository = "https://github.com/bluescarni/heyoka.py" 
